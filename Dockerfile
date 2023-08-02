@@ -21,7 +21,8 @@ RUN pip install uvicorn
 RUN pip install nvidia-cudnn-cu11
 RUN pip install torch
 RUN pip install transformers
-
+RUN pip install gdown
+Run pip install jdatetime
 RUN mkdir /code/app
 # COPY ./ /code/app
 EXPOSE 80

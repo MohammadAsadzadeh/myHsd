@@ -22,7 +22,25 @@ from bidi.algorithm import get_display
 from typing import Union
 from pydantic import BaseModel
 from fastapi import FastAPI
+import subprocess
+import sys
+import jdatetime
+from fastapi.middleware.cors import CORSMiddleware
 
+
+
+model_exist = False
+for f in os.listdir():
+    if f == "hatespeech_bert_model.pth":
+        model_exist = True
+        break
+if not model_exist:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "gdown"])
+    import gdown
+
+    url = "https://drive.google.com/uc?id=1v0KVzMvlxEh3dPP1f9lFTTxhvUA-jKOv"
+    output = "hatespeech_bert_model.pth"
+    gdown.download(url, output, quiet=False)
 
 device = (
     "cuda"
@@ -65,11 +83,34 @@ model = PiplineModel(preprocessor, rulebased_model, bert_model, bert_tokenizer, 
 class TextInput(BaseModel):
     text: str
     haterate: float
+    date_time: str
+    feedback: bool
+
+def getTime():
+    t = jdatetime.datetime.now()
+    return (str)(t.year)+"/"+(str)(t.month)+"/"+(str)(t.day)+"-"+(str)(t.hour)+":"+(str)(t.minute)+":"+(str)(t.second)
+
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 @app.post("/")
 async def haterating(item: TextInput):
     item.haterate = model(item.text)
+    item.date_time = getTime()
+    item.feedback = None
     return item
+
+@app.post("/feedback")
+async def feedback(feed: TextInput):
+    with open("feeds.txt", "a+") as f:
+        f.write(feed.text+"\t"+(str)(feed.haterate)+"\t"+(str)(feed.feedback)+"\t"+getTime()+"\n")
+    return feed
+
 
 
 
