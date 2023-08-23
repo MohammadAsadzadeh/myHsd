@@ -2,7 +2,7 @@
 Persian hate speech detection, for master of science proposal.  
 ## Installation
 - clone the project
-- set environment variables in <span style="background:pink;color:black">docker-compose.yml</span> file
+- set environment variables in docker-compose.yml file
 - run `docker compose up`
 
 ## Environment variables
